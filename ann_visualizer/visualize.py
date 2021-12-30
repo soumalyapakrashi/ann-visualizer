@@ -15,7 +15,7 @@ The above copyright notice and this permission notice
 shall be included in all copies or substantial portions of the Software.
 """
 
-def ann_viz(model, view=True, filename="network.gv", title="My Neural Network"):
+def ann_viz(model, view=False, filename="network.gv", title="My Neural Network"):
     """Vizualizez a Sequential model.
 
     # Arguments
@@ -37,6 +37,7 @@ def ann_viz(model, view=True, filename="network.gv", title="My Neural Network"):
     layer_types = [];
     hidden_layers = [];
     output_layer = 0;
+    g = None
     for layer in model.layers:
         if(layer == model.layers[0]):
             input_layer = int(str(layer.input_shape).split(",")[1][1:-1]);
@@ -123,7 +124,7 @@ def ann_viz(model, view=True, filename="network.gv", title="My Neural Network"):
                 raise ValueError("ANN Visualizer: Layer not supported for visualizing");
         for i in range(0, hidden_layers_nr):
             with g.subgraph(name="cluster_"+str(i+1)) as c:
-                if (layer_types[i] == "Dense"):
+                if (layer_types[i] == "Dense" and i != 0):
                     c.attr(color='white');
                     c.attr(rank='same');
                     #If hidden_layers[i] > 10, dont include all
@@ -202,5 +203,8 @@ def ann_viz(model, view=True, filename="network.gv", title="My Neural Network"):
 
         g.attr(arrowShape="none");
         g.edge_attr.update(arrowhead="none", color="#707070");
-        if view == True:
-            g.view();
+
+    if view == True:
+        g.view();
+        
+    return g
