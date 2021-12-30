@@ -38,8 +38,14 @@ def ann_viz(model, view=False, filename="network.gv", title="My Neural Network")
     hidden_layers = [];
     output_layer = 0;
     g = None
+    first_layer = 0
     for layer in model.layers:
-        if(layer == model.layers[0]):
+        # Ignore Normalization layers
+        if(type(layer) == keras.layers.preprocessing.normalization.Normalization):
+            first_layer += 1
+            continue
+
+        elif(layer == model.layers[0 + first_layer]):
             input_layer = int(str(layer.input_shape).split(",")[1][1:-1]);
             hidden_layers_nr += 1;
             if (type(layer) == keras.layers.core.Dense):
@@ -79,7 +85,7 @@ def ann_viz(model, view=False, filename="network.gv", title="My Neural Network")
                         layer_types.append("Activation");
         last_layer_nodes = input_layer;
         nodes_up = input_layer;
-        if(type(model.layers[0]) != keras.layers.core.Dense):
+        if(type(model.layers[0 + first_layer]) != keras.layers.core.Dense):
             last_layer_nodes = 1;
             nodes_up = 1;
             input_layer = 1;
@@ -89,10 +95,10 @@ def ann_viz(model, view=False, filename="network.gv", title="My Neural Network")
         g.graph_attr.update(splines="false", nodesep='1', ranksep='2');
         #Input Layer
         with g.subgraph(name='cluster_input') as c:
-            if(type(model.layers[0]) == keras.layers.core.Dense):
+            if(type(model.layers[first_layer]) == keras.layers.core.Dense):
                 the_label = title+'\n\n\n\nInput Layer';
-                if (int(str(model.layers[0].input_shape).split(",")[1][1:-1]) > 10):
-                    the_label += " (+"+str(int(str(model.layers[0].input_shape).split(",")[1][1:-1]) - 10)+")";
+                if (int(str(model.layers[first_layer].input_shape).split(",")[1][1:-1]) > 10):
+                    the_label += " (+"+str(int(str(model.layers[first_layer].input_shape).split(",")[1][1:-1]) - 10)+")";
                     input_layer = 10;
                 c.attr(color='white')
                 for i in range(0, input_layer):
@@ -102,7 +108,7 @@ def ann_viz(model, view=False, filename="network.gv", title="My Neural Network")
                     c.attr(rank='same');
                     c.node_attr.update(color="#2ecc71", style="filled", fontcolor="#2ecc71", shape="circle");
 
-            elif(type(model.layers[0]) == keras.layers.convolutional.Conv2D):
+            elif(type(model.layers[first_layer]) == keras.layers.convolutional.Conv2D):
                 #Conv2D Input visualizing
                 the_label = title+'\n\n\n\nInput Layer';
                 c.attr(color="white", label=the_label);
@@ -129,8 +135,8 @@ def ann_viz(model, view=False, filename="network.gv", title="My Neural Network")
                     c.attr(rank='same');
                     #If hidden_layers[i] > 10, dont include all
                     the_label = "";
-                    if (int(str(model.layers[i].output_shape).split(",")[1][1:-1]) > 10):
-                        the_label += " (+"+str(int(str(model.layers[i].output_shape).split(",")[1][1:-1]) - 10)+")";
+                    if (int(str(model.layers[first_layer + i].output_shape).split(",")[1][1:-1]) > 10):
+                        the_label += " (+"+str(int(str(model.layers[first_layer + i].output_shape).split(",")[1][1:-1]) - 10)+")";
                         hidden_layers[i] = 10;
                     c.attr(labeljust="right", labelloc="b", label=the_label);
                     for j in range(0, hidden_layers[i]):
